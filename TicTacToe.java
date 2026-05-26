@@ -4,22 +4,22 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 public class TicTacToe {
-    int boardWidth = 600;
-    int boardHeight = 650;
+    private int boardWidth = 600;
+    private int boardHeight = 650;
 
-    JFrame frame = new JFrame("Tic Tac Toe");
-    JLabel textLabel = new JLabel();
-    JPanel textPanel = new JPanel();
-    
-    JPanel boardPanel = new JPanel();
-    JButton[][] board = new JButton[3][3]; // to keep track of each button
-    String playerX = "X";
-    String playerO = "O";
-    String currentPlayer = playerX;
+    private JFrame frame = new JFrame("Tic Tac Toe");
+    private JLabel textLabel = new JLabel();
+    private JPanel textPanel = new JPanel();
+    private Board board = new Board();
 
-    int turns = 0;
+    private JPanel boardPanel = new JPanel();
 
-    boolean gameOver = false;
+     // to keep track of each button
+    private int currentPlayer = 1;
+
+    private int turns = 0;
+
+    private boolean gameOver = false;
 
     public TicTacToe() { // constructor/game loop
         // Creates Window settings (i.e. size, resizibility)
@@ -44,39 +44,27 @@ public class TicTacToe {
         frame.add(textPanel, BorderLayout.NORTH);
 
         // Creates the buttons
-        boardPanel.setLayout(new GridLayout(3, 3));
-        boardPanel.setBackground(Color.darkGray);
         frame.add(boardPanel);
-
+        
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 3; c++) {
-                // Makes tile
-                JButton tile = new JButton();
-                board[r][c] = tile;
-                boardPanel.add(tile);
-
-                // Sets tile visuals
-                tile.setBackground(Color.darkGray);
-                tile.setForeground(Color.BLACK);
-                tile.setFont(new Font ("Arial", Font.BOLD, 120));
-                tile.setFocusable(false);
-                tile.setContentAreaFilled(false);
-                tile.setOpaque(true);
-
-                tile.addActionListener(new ActionListener() {
+                board.getTile(r, c, "tile").addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        if (gameOver) { return; }
+                        if (gameOver) {
+                            board.resetGame();
+                            return;
+                        }
                         JButton tile = (JButton) e.getSource();
                         textLabel.setText(currentPlayer + "'s Turn");
                         if (tile.getText().equals("")){
-                            tile.setText(currentPlayer);
+                            board.setTile(r, c, "0");
                             turns++;
-                            checkWinner();
-                            if (currentPlayer.equals("X")) {
-                                currentPlayer = playerO;
+                            board.checkWinner();
+                            if (currentPlayer == 1) {
+                                currentPlayer = 0;
                             } else {
-                                currentPlayer = playerX;
+                                currentPlayer = 1;
                             }
                         }
                         
@@ -86,79 +74,38 @@ public class TicTacToe {
         }
     }
 
-    public void checkWinner() // checks who wins
-    {
-        if (turns == 9) {
-            textLabel.setText("Tie!");
-            for (int r = 0; r < 3; r++) {
-                for (int c = 0; c < 3; c++) {
-                    setTie(board[r][c]);
-                }
-            }
-        }
-
-        // check horizontally
-        for (int r = 0; r < 3; r++) {
-            String firstItem = board[r][0].getText();
-            if (firstItem.equals("")) {
-                r++;
-            } else {
-                if (board[r][1].getText().equals(firstItem) && board[r][2].getText().equals(firstItem))
-                {
-                    gameOver = true;
-                }
-            }
-        }
-
-        // check vertically
-        for (int c = 0; c < 3; c++) {
-            String firstItem = board[0][c].getText();
-            if (firstItem.equals("")) {
-                c++;
-            } else {
-                if (board[1][c].getText().equals(firstItem) && board[2][c].getText().equals(firstItem))
-                {
-                    for (int i = 0; i < 3; i++){
-                        setWinner(board[i][c]);
-                    }
-                    gameOver = true;
-                }
-            }
-        }
-
-        // check diagonally
-        if (!board[0][0].getText().equals("") &&
-        board[0][0].getText().equals(board[1][1].getText()) &&
-        board[0][0].getText().equals(board[2][2].getText()))
-        {
-            for (int i = 0; i < 3; i++){
-                setWinner(board[i][i]);
-            }
-            gameOver = true;
-        }
-
-        if (!board[0][2].getText().equals("") &&
-        board[0][2].getText().equals(board[1][1].getText()) &&
-        board[0][2].getText().equals(board[2][0].getText()))
-        {
-            setWinner(board[0][2]); 
-            setWinner(board[1][1]);
-            setWinner(board[2][0]);            
-            gameOver = true;
-        } 
+    // getters and setters
+    public int getTurns() {
+        return turns;
     }
 
-    public void setWinner(JButton tile)
-    {
-        tile.setForeground(Color.green);
-        tile.setBackground(Color.green);
-        textLabel.setText(currentPlayer + " is the winner!");
+    public void setTurns(int turns) {
+        this.turns = turns;
     }
 
-    public void setTie(JButton tile)
-    {
-        tile.setForeground(Color.gray);
-        tile.setBackground(Color.gray);
-        textLabel.setText("Tie!");
+    public boolean isGameOver() {
+        return gameOver;
     }
+
+    public void changeGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
+    public void setLabelText(String newText) {
+        textLabel.setText(newText);
+    }
+
+    public void setCurrentPlayer (int player) {
+        this.currentPlayer = player;
+    }
+
+    public void editBoardPanel(int gridWidth, int gridHeight, Color color) {
+        boardPanel.setLayout(new GridLayout(gridWidth, gridHeight));
+        boardPanel.setBackground(color);
+    }
+
+    public void editBoardPanel(JButton button) {
+        boardPanel.add(button);
+    }
+
 }
