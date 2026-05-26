@@ -71,6 +71,8 @@ public class TicTacToe {
                             return;
                         }
 
+                        boolean special = specialRound();
+
                         // only allow human player to click
                         if (!(currentPlayer instanceof HumanPlayer)) {
                             return;
@@ -79,12 +81,12 @@ public class TicTacToe {
                         if (board.getTileText(finalR, finalC).equals("")) {
                             board.setTileText(finalR, finalC, String.valueOf(currentPlayer.getSymbol()));
                             turns++;
-                            checkWinner();
+                            checkWinner(special);
                             if (!gameOver) {
                                 switchPlayer();
                                 // if next player is computer, make its move
                                 if (currentPlayer instanceof ComputerPlayer) {
-                                    computerMove();
+                                    computerMove(special);
                                 }
                             }
                         }
@@ -107,7 +109,7 @@ public class TicTacToe {
     }
 
     // handles the computer's random move
-    private void computerMove() {
+    private void computerMove(boolean special) {
         ComputerPlayer computer = (ComputerPlayer) currentPlayer;
         int[] move = computer.getRandomMove(board.getBoardState());
        
@@ -120,22 +122,33 @@ public class TicTacToe {
 
         board.setTileText(move[0], move[1], String.valueOf(currentPlayer.getSymbol()));
         turns++;
-        checkWinner();
+        checkWinner(special);
         if (!gameOver) {
             switchPlayer();
         }
     }
 
     // checks all win conditions and tie
-    private void checkWinner() {
+    private void checkWinner(boolean special) {
         // check horizontally
         for (int r = 0; r < 3; r++) {
             String first = board.getTileText(r, 0);
             if (!first.equals("") &&
                 board.getTileText(r, 1).equals(first) &&
                 board.getTileText(r, 2).equals(first)) {
-                for (int i = 0; i < 3; i++) { board.highlightWinner(r, i); }
-                winners.add(currentPlayer.getName());
+                for (int i = 0; i < 3; i++) {
+                    board.highlightWinner(r, i);
+                }
+
+                if (special) {
+                    int loops = doublePoints(getWinCount(currentPlayer));
+                    for (int i = 0; i < loops; i++) {
+                        winners.add(currentPlayer.getName());
+                    }
+                } else {
+                    winners.add(currentPlayer.getName());
+                }
+
                 endGame(currentPlayer.getName() + " wins!");
                 return;
             }
@@ -148,7 +161,16 @@ public class TicTacToe {
                 board.getTileText(1, c).equals(first) &&
                 board.getTileText(2, c).equals(first)) {
                 for (int i = 0; i < 3; i++) { board.highlightWinner(i, c); }
-                winners.add(currentPlayer.getName());
+
+                if (special) {
+                    int loops = doublePoints(getWinCount(currentPlayer));
+                    for (int i = 0; i < loops; i++) {
+                        winners.add(currentPlayer.getName());
+                    }
+                } else {
+                    winners.add(currentPlayer.getName());
+                }
+
                 endGame(currentPlayer.getName() + " wins!");
                 return;
             }
@@ -162,7 +184,16 @@ public class TicTacToe {
             for (int i = 0; i < 3; i++) {
                 board.highlightWinner(i, i);
             }
-            winners.add(currentPlayer.getName());
+
+            if (special) {
+                int loops = doublePoints(getWinCount(currentPlayer));
+                for (int i = 0; i < loops; i++) {
+                    winners.add(currentPlayer.getName());
+                }
+            } else {
+                winners.add(currentPlayer.getName());
+            }
+            
             endGame(currentPlayer.getName() + " wins!");
             return;
         }
@@ -174,7 +205,16 @@ public class TicTacToe {
             board.highlightWinner(0, 2);
             board.highlightWinner(1, 1);
             board.highlightWinner(2, 0);
-            winners.add(currentPlayer.getName());
+            
+            if (special) {
+                int loops = doublePoints(getWinCount(currentPlayer));
+                for (int i = 0; i < loops; i++) {
+                    winners.add(currentPlayer.getName());
+                }
+            } else {
+                winners.add(currentPlayer.getName());
+            }
+
             endGame(currentPlayer.getName() + " wins!");
             return;
         }
@@ -209,5 +249,24 @@ public class TicTacToe {
             }
         }
         return count;
+    }
+
+    private boolean specialRound() {
+        int special = ((int) Math.random()) + 1;
+
+        if (special % 2 == 0) {
+            textLabel.setText("Special Round! Points are doubled");
+
+            return true;
+        }
+        return false;
+    }
+
+    private int doublePoints(int num) {
+        if (num == 0) {
+            return 1;
+        } else {
+            return 1 + doublePoints(num-1);
+        }
     }
 }
