@@ -1,6 +1,6 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.*;
 
 public class TicTacToe {
@@ -17,7 +17,9 @@ public class TicTacToe {
     String playerO = "O";
     String currentPlayer = playerX;
 
-    public TicTacToe() {
+    boolean gameOver = false;
+
+    public TicTacToe() { // constructor/game loop
         // Creates Window settings (i.e. size, resizibility)
         frame.setVisible(true);
         frame.setSize(boardWidth, boardHeight);
@@ -59,10 +61,21 @@ public class TicTacToe {
                 tile.setContentAreaFilled(false);
                 tile.setOpaque(true);
 
-                // checks actions
                 tile.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
-                        JButton tile = e.getSource();
+                        JButton tile = (JButton) e.getSource();
+                        textLabel.setText(currentPlayer + "'s Turn");
+                        if (tile.getText().equals("")){
+                            tile.setText(currentPlayer);
+
+                            if (currentPlayer.equals("X")) {
+                                currentPlayer = playerO;
+                            } else {
+                                currentPlayer = playerX;
+                            }
+                        }
+                        
                     }
                 });
             }
