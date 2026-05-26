@@ -2,14 +2,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import java.util.*;
 
 public class TicTacToe {
     private int boardWidth = 600;
-    private int boardHeight = 650;
+    private int boardHeight = 700;
 
     private JFrame frame = new JFrame("Tic Tac Toe");
     private JLabel textLabel = new JLabel();
+    private JLabel bottomLabel = new JLabel();
     private JPanel textPanel = new JPanel();
+    private JPanel bottomPanel = new JPanel();
     private Board board = new Board();
 
     private Player player1 = new HumanPlayer("Player 1", 'X');
@@ -18,6 +21,8 @@ public class TicTacToe {
 
     private int turns = 0;
     private boolean gameOver = false;
+
+    private ArrayList<String> winners = new ArrayList<String>();
 
     public TicTacToe() {
         // window settings
@@ -35,9 +40,19 @@ public class TicTacToe {
         textLabel.setText("Tic Tac Toe");
         textLabel.setOpaque(true);
 
+        bottomLabel.setBackground(Color.darkGray);
+        bottomLabel.setForeground(Color.white);
+        bottomLabel.setFont(new Font("Serif", Font.BOLD, 30));
+        bottomLabel.setHorizontalAlignment(JLabel.CENTER);
+        bottomLabel.setOpaque(true);
+
         textPanel.setLayout(new BorderLayout());
         textPanel.add(textLabel);
         frame.add(textPanel, BorderLayout.NORTH);
+        
+        bottomPanel.setLayout(new BorderLayout());
+        bottomPanel.add(bottomLabel);
+        frame.add(bottomPanel, BorderLayout.SOUTH);
 
         // add board
         frame.add(board.getBoardPanel(), BorderLayout.CENTER);
@@ -57,7 +72,9 @@ public class TicTacToe {
                         }
 
                         // only allow human player to click
-                        if (!(currentPlayer instanceof HumanPlayer)) { return; }
+                        if (!(currentPlayer instanceof HumanPlayer)) {
+                            return;
+                        }
 
                         if (board.getTileText(finalR, finalC).equals("")) {
                             board.setTileText(finalR, finalC, String.valueOf(currentPlayer.getSymbol()));
@@ -81,7 +98,11 @@ public class TicTacToe {
 
     // switches to the other player and updates the label
     private void switchPlayer() {
-        currentPlayer = (currentPlayer == player1) ? player2 : player1;
+        if (currentPlayer.equals(player1)){
+            currentPlayer = player2;
+        } else {
+            currentPlayer = player1;
+        }
         textLabel.setText(currentPlayer.getName() + "'s Turn");
     }
 
@@ -89,6 +110,14 @@ public class TicTacToe {
     private void computerMove() {
         ComputerPlayer computer = (ComputerPlayer) currentPlayer;
         int[] move = computer.getRandomMove(board.getBoardState());
+       
+        long start = System.currentTimeMillis();
+        long current = System.currentTimeMillis();
+
+        while (current < start+2){
+            current = System.currentTimeMillis();
+        }
+
         board.setTileText(move[0], move[1], String.valueOf(currentPlayer.getSymbol()));
         turns++;
         checkWinner();
@@ -106,6 +135,7 @@ public class TicTacToe {
                 board.getTileText(r, 1).equals(first) &&
                 board.getTileText(r, 2).equals(first)) {
                 for (int i = 0; i < 3; i++) { board.highlightWinner(r, i); }
+                winners.add(currentPlayer.getName());
                 endGame(currentPlayer.getName() + " wins!");
                 return;
             }
@@ -118,17 +148,21 @@ public class TicTacToe {
                 board.getTileText(1, c).equals(first) &&
                 board.getTileText(2, c).equals(first)) {
                 for (int i = 0; i < 3; i++) { board.highlightWinner(i, c); }
+                winners.add(currentPlayer.getName());
                 endGame(currentPlayer.getName() + " wins!");
                 return;
             }
         }
 
-        // check diagonal top-left to bottom-right
+        // check diagonals
         String mid = board.getTileText(1, 1);
         if (!mid.equals("") &&
             board.getTileText(0, 0).equals(mid) &&
             board.getTileText(2, 2).equals(mid)) {
-            for (int i = 0; i < 3; i++) { board.highlightWinner(i, i); }
+            for (int i = 0; i < 3; i++) {
+                board.highlightWinner(i, i);
+            }
+            winners.add(currentPlayer.getName());
             endGame(currentPlayer.getName() + " wins!");
             return;
         }
@@ -140,6 +174,7 @@ public class TicTacToe {
             board.highlightWinner(0, 2);
             board.highlightWinner(1, 1);
             board.highlightWinner(2, 0);
+            winners.add(currentPlayer.getName());
             endGame(currentPlayer.getName() + " wins!");
             return;
         }
@@ -154,13 +189,25 @@ public class TicTacToe {
     private void endGame(String message) {
         textLabel.setText(message + " Click to restart!");
         gameOver = true;
+        bottomLabel.setText(player1.getName() + " wins: " + getWinCount(player1) + "  |  " + player2.getName() + " wins: " + getWinCount(player2));
     }
 
-    private void resetGame() {
+    private void resetGame() { // resets game after win or tie
         turns = 0;
         currentPlayer = player1;
         gameOver = false;
         textLabel.setText("Tic Tac Toe");
         board.reset();
+    }
+
+    // counts how many times a player's name appears in the winners list
+    private int getWinCount(Player player) {
+        int count = 0;
+        for (String winner : winners) {
+            if (winner.equals(player.getName())) {
+                count++;
+            }
+        }
+        return count;
     }
 }
